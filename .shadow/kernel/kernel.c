@@ -50,7 +50,7 @@ void splash() {
   
   unsigned offset = *(unsigned*)(P + 0xa);
   unsigned i = offset;
-  unsigned W = *(unsigned*)(P + 0x12), H = (*(unsigned*)(P + 0x16));
+  unsigned W = *(unsigned*)(P + 0x12), H = -(*(unsigned*)(P + 0x16));
   unsigned bitcount = (unsigned)(((unsigned)(P[0x1c])) | ((unsigned)(P[0x1d]) << 8));
   unsigned bytecount = bitcount >> 3;
 
@@ -62,7 +62,7 @@ void splash() {
       unsigned blue = (unsigned)P[i], green = (unsigned)P[i + 1], red = (unsigned)P[i + 2];
       i += (char)bytecount;
       unsigned rgb = (red << 16) | (green << 8) | blue;
-      draw_tile(y * SIDE, x * SIDE, SIDE, SIDE, rgb); // white
+      draw_tile(y * SIDE, x * SIDE, SIDE, SIDE, rgb); // color is rgb 1 * 1
     }
   }
 }
