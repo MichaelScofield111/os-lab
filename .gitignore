@@ -1,5 +1,3 @@
-# 忽略 .shadow 文件夹及其内容  
-.shadow/  
-  
+.shadow
 # 忽略所有 .so 共享库文件  
 *.so
