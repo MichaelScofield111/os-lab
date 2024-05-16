@@ -104,7 +104,7 @@ int main(int argc, char *argv[]) {
                 exit(-1);
             }
             
-            assert(func)
+            assert(func);
             printf("= %d\n", func());
             dlclose(handle);
             expr_count ++;
