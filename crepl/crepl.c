@@ -4,7 +4,6 @@
 #include <dlfcn.h>
 #include <sys/wait.h>
 #include <assert.h>
-#include <sys/wait.h>
 #include <errno.h>  
 #include <stdbool.h>
 #include <stdlib.h>
@@ -19,11 +18,11 @@ static FILE *fp;
 int main(int argc, char *argv[]) {
     static char line[4096];
 
+    // create /tmp/a.c file
     fp = fopen("/tmp/a.c", "w");
 	fclose(fp);
     
     while (1) {
-        // init 
         bool is_expr = false;
 
         printf("crepl> ");
@@ -37,26 +36,27 @@ int main(int argc, char *argv[]) {
         // To be implemented.
         printf("Got %zu chars.\n", strlen(line));
         
-        // open a temp file to  write line[4096].
-        // Defensive programming.
-        // check is the function(int).
+        // if line is a function
         if (strncmp(line, "int ", 4) == 0) {
             fp = fopen("/tmp/a.c", "a");
             if (fp == NULL) {
             fprintf(stderr, "fopen error: %s\n", strerror(errno));
             exit(-1);
-        }
+            }
+
+            assert(fp);
             fprintf(fp, "\n%s\n", line);
             fclose(fp);
         }
         else{
-            // is a expr to build a wrapper.
+            // if line is a expr to load a worapper
             fp = fopen("/tmp/a.c", "a");
             if (fp == NULL) {
                 fprintf(stderr, "fopen error: %s\n", strerror(errno));
                 exit(-1);
             }
 
+            assert(fp);
             is_expr = true;
             fprintf(fp, "%s%s%d%s%s%s",
 					wrapper_func[0], wrapper_func[1], expr_count, wrapper_func[2], line, wrapper_func[3]);
@@ -72,15 +72,17 @@ int main(int argc, char *argv[]) {
                 NULL,
             };
 
+            // child
             if(fork() == 0) {
+                // a little hack!!! 
                 execvp("gcc", exec_gcc);
                 perror("gcc error");
                 exit(-1);
             }
             
             wait(NULL);
-
-            // create other bash to execve.
+            
+            // execve the binary exe
             if (is_expr) {
                 void *handle = dlopen("/tmp/liba.so", RTLD_LAZY);
                 if(!handle)
@@ -88,8 +90,10 @@ int main(int argc, char *argv[]) {
                     fprintf(stderr, "%s\n", dlerror());
                     exit(-1);
                 }
+
             //clean fault
             dlerror();
+
             // get function address.
             char expr_name[100];
             sprintf(expr_name, "%s%d", wrapper_func[1], expr_count);
@@ -100,7 +104,8 @@ int main(int argc, char *argv[]) {
                 exit(-1);
             }
             
-            printf("%d\n", func());
+            assert(func);
+            printf("= %d\n", func());
             dlclose(handle);
             expr_count ++;
             is_expr = 0;
@@ -108,7 +113,5 @@ int main(int argc, char *argv[]) {
         }
     }
 }
-        
-
 
 
