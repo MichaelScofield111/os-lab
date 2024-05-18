@@ -1,6 +1,7 @@
 // DO NOT MODIFY: Will be reverted by the Online Judge.
 
 #include <am.h>
+#include <stddef.h>
 
 #define MODULE(mod) \
     typedef struct mod_##mod##_t mod_##mod##_t; \
