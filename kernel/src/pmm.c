@@ -6,13 +6,24 @@ static void *pmm_end = NULL;
 static void *pmm_start = NULL;
 
 
-// align size to 2^n
-static size_t align_size(size_t size){
-    size_t ret = 1;
-    while(ret < size) size <<= 1;
-      ret = (ret > 8) ? ret : 8;
-    return ret;
+// Align size to 2^N
+static size_t align_size(size_t size) {
+  size_t ret = 1;
+  while (ret < size) ret <<= 1;
+  ret = (ret > 8) ? ret : 8;
+  return ret;
 }
+
+
+// align size to 2^n
+// static size_t align_size(size_t size){
+//     size_t ret = 1;
+//     while(ret < size) size <<= 1; 
+//     ret = (ret > 8) ? ret : 8;
+//     return ret;
+// }
+
+
 
 //  buddy system
 
@@ -30,7 +41,6 @@ static inline size_t buddy_block_order(size_t size){
     return order;
 }
 
-
 // 初始化buddy_pool_init
 void buddy_pool_init(buddy_pool_t *pool, void *start, void *end) {
     // 计算出页数
@@ -41,9 +51,11 @@ void buddy_pool_init(buddy_pool_t *pool, void *start, void *end) {
          init_list_head(&(pool->free_lists[i].free_list));
     }
 
-    memset((char*)(pool->pool_meta_data), 0, sizeof(buddy_block_t) * page_num);
+    memset((char *)(pool->pool_meta_data), 0, sizeof(buddy_block_t) * page_num);
     start += sizeof(buddy_block_t) * page_num;
     page_num -= page_num * sizeof(buddy_block_t) >> PAGE_SHIFT;
+    // align memory start
+    pool->pool_start_addr = (void *)ALIGN(((uintptr_t)start), PAGE_SIZE);
     pool->pool_end_addr = end;
     page_num = (pool->pool_end_addr - pool->pool_start_addr) >> PAGE_SHIFT;
 
@@ -199,7 +211,17 @@ void buddy_free(buddy_pool_t* pool, void* ptr){
     
     unlock(&global_lock);
 }
-// =============slab========
+
+
+// ==================== (2) Slab allocator related ====================
+
+/**
+ * typedef struct cache {
+    slab_t *slabs;      // linked list of slabs
+    size_t obj_size;    // size of object in this cache, 8, 16, 32, ...2048
+    lock_t cache_lock;  // lock for cache
+} cache_t;
+*/
 static cache_t g_caches[MAX_CACHES];  // global cache manager, MAX_CACHES = 9
 
 // initialize g_caches, obj_size = 8, 16, 32, ...2048
@@ -329,7 +351,8 @@ void slab_free(void *ptr) {
   unlock(&slab->slb_lock);
 }
 
-//=====================================//
+//======================= (3) Functions to outside ========================
+
 static void *kalloc(size_t size) {
   void *ret = NULL;
   size = align_size(size);
@@ -397,3 +420,4 @@ MODULE_DEF(pmm) = {
     .alloc = kalloc,
     .free = kfree,
 };
+
