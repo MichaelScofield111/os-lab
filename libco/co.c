@@ -52,7 +52,7 @@ struct co *co_start(const char *name, void (*func)(void *), void *arg)
     if (current == NULL) 
     {
         current = (struct co*)malloc(sizeof(struct co));
-        current->status = CO_RUNNING; // BUG !! 写成了 current->status==8CO_RUNNING;
+        current->status = CO_RUNNING;
         current->waiter = NULL;
         strcpy(current->name, "main");
         current->next = current;
