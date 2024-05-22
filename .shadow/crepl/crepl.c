@@ -80,6 +80,7 @@ int main(int argc, char *argv[]) {
                 exit(-1);
             }
             
+	    // wait all the child ending
             wait(NULL);
             
             // execve the binary exe
