@@ -238,7 +238,7 @@ int main(int argc, char *argv[]) {
         close(pipefd[0]);
         regfree(&re_1);
         regfree(&re_2);
-        free_list(head);
+        //free_list(head);
     }
     return 0;
 }
