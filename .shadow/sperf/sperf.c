@@ -178,7 +178,7 @@ int main(int argc, char *argv[]) {
         size_t sys_time_len = sys_time.rm_eo - sys_time.rm_so;
         strncpy(time, buffer + sys_time.rm_so + 1, sys_time_len);
         char num_time[512];
-        int j = 0;
+        j = 0;
         for (int i = 0; time[i];  i ++){
             if((time[i] >= '0' && time[i] <= '9') || time[i] == '.'){
                 num_time[j] = time[i];
