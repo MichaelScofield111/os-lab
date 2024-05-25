@@ -1,2 +1,5 @@
 # 忽略所有 .so 共享库文件  
 *.so
+
+#ingore .vscode
+.vscode

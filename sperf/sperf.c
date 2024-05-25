@@ -14,14 +14,14 @@
 
 // store the syscall informaton in the list
 typedef struct list_node{
-  char* name;
+  char*  sys_name;
   double time;
   struct  list_node* next;
 }list_node;
 
-// add head node
+// add vitural head
 list_node head_node = {
-  .name="start",
+  .sys_name="start",
   .time=99999,
   .next=NULL
 };
@@ -33,25 +33,28 @@ list_node* insert_node(list_node* head, list_node* node)
     if(node == NULL) return head;
     assert(node);
 
-    // record pre point
-    list_node* p = head, *q = NULL;
-    while(p != NULL)
-    { 
-      if(node->time >= p->time) break;
-      q = p;
-      p = p->next;
-
+    if(head->next == NULL){
+        node->next = head->next;
+        head->next = node;
     }
+    else
+    {   list_node* pre = NULL;
+        list_node* cur = NULL;
+        for (cur = head; cur != NULL; cur = cur->next){
+            if(node->time > cur->time){
+                // insert
+                pre->next = node;
+                node->next = cur;
+            }
+            pre = cur;
+        }
 
-    if(p == NULL)
-    {
-      q->next = node;
-      node->next = NULL;
-    }else{
-      node->next = p;
-      q->next = node;
+        // special check
+        if(cur == NULL){
+            pre->next = node;
+            node ->next = cur;
+        }
     }
-
     return head;
 }
 
@@ -59,8 +62,8 @@ void free_list(struct list_node *head) {
   list_node *curr = head;
   while (curr != NULL) {
     struct list_node *next = curr->next;
-    if (curr->name != NULL) {
-      free(curr->name);
+    if (curr->sys_name != NULL) {
+      free(curr->sys_name);
     }
     free(curr);
     curr = next;
@@ -114,7 +117,7 @@ int main(int argc, char *argv[]) {
        char *exec_envp[] = { "PATH=/bin", NULL, };
        execve("strace",          exec_argv, exec_envp);
        execve("/bin/strace",     exec_argv, exec_envp);
-        execve("/usr/bin/strace", exec_argv, exec_envp);
+       execve("/usr/bin/strace", exec_argv, exec_envp);
        close(pipefd[1]);
        perror(argv[0]);
        exit(-1);
@@ -129,13 +132,12 @@ int main(int argc, char *argv[]) {
       // 定义正则表达式
       regex_t re_1;
       regex_t re_2;
-      const char* pattern_sys_name = "^[a-zA-Z]*_*[a-zA-Z]*[0-9]*\\(";
+      const char* pattern_sys_name = "[^\\(\n\r\b\t]*\\(";;
       const char* pattern_sys_time = "<[0-9\\.]*>\n";
       if(regcomp(&re_1, pattern_sys_name, REG_EXTENDED) != 0 || regcomp(&re_2, pattern_sys_time, REG_EXTENDED) != 0){
           perror("falut regcmp create");
           exit(-1);
       }
-
 
       // read stace form pipe
       char buffer[512];
@@ -144,28 +146,36 @@ int main(int argc, char *argv[]) {
       while(fgets(buffer,sizeof(buffer), fp) != NULL)
       {
         if (strstr(buffer, "+++ exited with 0 +++") != NULL || strstr(buffer, "+++ exited with 1 +++") != NULL) {
-                break;
+            break;
         }
 
         // check sys_name
         regmatch_t sys_name;
         if(regexec(&re_1, buffer, (size_t) 1, &sys_name, 0) != 0) {
-              continue;
+          continue;
         }
-        char name[1024];
+        char temp_name[512];
         size_t sys_name_len = sys_name.rm_eo - sys_name.rm_so;
-        strncpy(name, buffer + sys_name.rm_so, sys_name_len);
-        
+        strncpy(temp_name, buffer + sys_name.rm_so, sys_name_len);
+        char *name = (char *)malloc(sizeof(char) * sys_name_len);
+        int j = 0;
+        for (int i = 0; i < sys_name_len; i ++){
+            if(temp_name[i] == '(') continue;            
+            name[j] = temp_name[i];
+            j ++;
+        }
+        name[j] = '\0';
+
         //check sys spend time
         regmatch_t sys_time;
         if(regexec(&re_2, buffer, (size_t) 1, &sys_time, 0) != 0) {
-              continue;
+            continue;
         }
         char time[512];
         size_t sys_time_len = sys_time.rm_eo - sys_time.rm_so;
         strncpy(time, buffer + sys_time.rm_so + 1, sys_time_len);
-        char num_time[512];
-        int j = 0;
+        char *num_time = (char *)malloc(sizeof(char) * sys_name_len);
+        j = 0;
         for (int i = 0; time[i];  i ++){
             if((time[i] >= '0' && time[i] <= '9') || time[i] == '.'){
                 num_time[j] = time[i];
@@ -174,9 +184,9 @@ int main(int argc, char *argv[]) {
         }
         num_time[j] = '\0';
         
+
         double spent_time = atof(num_time);
-
-
+        free(num_time);
         // all time update
         total_time += spent_time;
 
@@ -187,10 +197,11 @@ int main(int argc, char *argv[]) {
         list_node* pre = NULL;
         for (list_node* curr = head; curr != NULL; curr = curr->next)
         {
-          if(strcmp(curr->name, name) == 0){
+          if(strcmp(curr->sys_name, name) == 0){
             update_flag = 1;
-            node = curr;
             pre->next = curr->next;
+            node = curr;
+            free(name);
             break;
           }
           pre = curr;
@@ -202,33 +213,33 @@ int main(int argc, char *argv[]) {
         } else {
           // 新建节点，初始化信息
           node = (list_node *)malloc(sizeof(list_node));
-          node->name = name;
+          node->sys_name = name;
           node->time = spent_time;
         }
+
         // 插入链表
         head = insert_node(head, node);
+ 
+    }
 
         //format print 5th spend time
-         printf("Time: %ds\n", curr_time);
+        printf("Time: %f\n", total_time);
         int k = 0;
         list_node* st = head->next;
         for (list_node* start = st; start != NULL; start = start->next)
         {  
-          if(k ++ > 5) break;
-          printf("%10s:%10lfs(%.2lf%%)\n",start->name,start->time, start->time / total_time * 100);
+          if((k ++) > 6) break;
+          printf("%10s:%10lfs(%.2lf%%)\n",start->sys_name,start->time, start->time / total_time * 100);
         }
-          sleep(2);
-          curr_time += 2;
-          printf("===================================\n");
-        }
+
+        printf("===================================\n");
 
         fclose(fp);
         close(pipefd[0]);
         regfree(&re_1);
         regfree(&re_2);
-        free_list(head);
+        //free_list(head);
     }
-
     return 0;
 }
 
