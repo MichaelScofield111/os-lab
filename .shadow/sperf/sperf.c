@@ -38,9 +38,9 @@ list_node* insert_node(list_node* head, list_node* node)
         head->next = node;
     }
     else
-    {   list_node* pre = head;
+    {   list_node* pre = NULL;
         list_node* cur = NULL;
-        for (cur = head->next; cur != NULL; cur = cur->next){
+        for (cur = head; cur != NULL; cur = cur->next){
             if(node->time > cur->time){
                 // insert
                 pre->next = node;
@@ -54,9 +54,6 @@ list_node* insert_node(list_node* head, list_node* node)
             pre->next = node;
             node ->next = cur;
         }
-
-        free(pre);
-        free(cur);
     }
     return head;
 }
