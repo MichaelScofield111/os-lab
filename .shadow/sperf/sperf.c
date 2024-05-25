@@ -14,14 +14,14 @@
 
 // store the syscall informaton in the list
 typedef struct list_node{
-  char* node_name;
+  char*  sys_name;
   double time;
   struct  list_node* next;
 }list_node;
 
 // add vitural head
 list_node head_node = {
-  .node_name="start",
+  .sys_name="start",
   .time=99999,
   .next=NULL
 };
@@ -54,6 +54,9 @@ list_node* insert_node(list_node* head, list_node* node)
             pre->next = node;
             node ->next = cur;
         }
+
+        free(pre);
+        free(cur);
     }
     return head;
 }
@@ -62,8 +65,8 @@ void free_list(struct list_node *head) {
   list_node *curr = head;
   while (curr != NULL) {
     struct list_node *next = curr->next;
-    if (curr->node_name != NULL) {
-      free(curr->node_name);
+    if (curr->sys_name != NULL) {
+      free(curr->sys_name);
     }
     free(curr);
     curr = next;
@@ -132,7 +135,7 @@ int main(int argc, char *argv[]) {
       // 定义正则表达式
       regex_t re_1;
       regex_t re_2;
-      const char* pattern_sys_name = "^[a-z_][a-z0-9_]*";;
+      const char* pattern_sys_name = "[^\\(\n\r\b\t]*\\(";;
       const char* pattern_sys_time = "<[0-9\\.]*>\n";
       if(regcomp(&re_1, pattern_sys_name, REG_EXTENDED) != 0 || regcomp(&re_2, pattern_sys_time, REG_EXTENDED) != 0){
           perror("falut regcmp create");
@@ -158,12 +161,13 @@ int main(int argc, char *argv[]) {
         char *temp_name = (char *)malloc(sizeof(char) * sys_name_len);
         strncpy(temp_name, buffer + sys_name.rm_so, sys_name_len);
         char name[512];
-        int i = 0;
-        for (i = 0; i < sys_name_len; i ++){
-            if(temp_name[i] == '(') break;
-            name[i] = temp_name[i];
+        int j = 0;
+        for (int i = 0; i < sys_name_len; i ++){
+            if(temp_name[i] == '(') continue;            
+            name[j] = temp_name[i];
+            j ++;
         }
-        name[i] = '\0';
+        name[j] = '\0';
 
         //check sys spend time
         regmatch_t sys_time;
@@ -182,10 +186,9 @@ int main(int argc, char *argv[]) {
             }
         }
         num_time[j] = '\0';
+        free(time);
         
         double spent_time = atof(num_time);
-
-
         // all time update
         total_time += spent_time;
 
@@ -196,10 +199,11 @@ int main(int argc, char *argv[]) {
         list_node* pre = NULL;
         for (list_node* curr = head; curr != NULL; curr = curr->next)
         {
-          if(strcmp(curr->node_name, name) == 0){
+          if(strcmp(curr->sys_name, name) == 0){
             update_flag = 1;
-            node = curr;
             pre->next = curr->next;
+            node = curr;
+            free(name);
             break;
           }
           pre = curr;
@@ -211,9 +215,10 @@ int main(int argc, char *argv[]) {
         } else {
           // 新建节点，初始化信息
           node = (list_node *)malloc(sizeof(list_node));
-          node->node_name = name;
+          node->sys_name = name;
           node->time = spent_time;
         }
+
         // 插入链表
         head = insert_node(head, node);
     }
@@ -225,7 +230,7 @@ int main(int argc, char *argv[]) {
         for (list_node* start = st; start != NULL; start = start->next)
         {  
           if((k ++) > 5) break;
-          printf("%10s:%10lfs(%.2lf%%)\n",start->node_name,start->time, start->time / total_time * 100);
+          printf("%10s:%10lfs(%.2lf%%)\n",start->sys_name,start->time, start->time / total_time * 100);
         }
 
         printf("===================================\n");
