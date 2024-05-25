@@ -186,7 +186,7 @@ int main(int argc, char *argv[]) {
             }
         }
         num_time[j] = '\0';
-        free(time);
+
         
         double spent_time = atof(num_time);
         // all time update
@@ -203,7 +203,6 @@ int main(int argc, char *argv[]) {
             update_flag = 1;
             pre->next = curr->next;
             node = curr;
-            free(name);
             break;
           }
           pre = curr;
