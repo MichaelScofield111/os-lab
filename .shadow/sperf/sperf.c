@@ -168,7 +168,8 @@ int main(int argc, char *argv[]) {
             j ++;
         }
         name[j] = '\0';
-
+        free(temp_name);
+        
         //check sys spend time
         regmatch_t sys_time;
         if(regexec(&re_2, buffer, (size_t) 1, &sys_time, 0) != 0) {
