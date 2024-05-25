@@ -220,6 +220,8 @@ int main(int argc, char *argv[]) {
 
         // 插入链表
         head = insert_node(head, node);
+        free(name);
+        free(num_time);
     }
 
         //format print 5th spend time
