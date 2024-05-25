@@ -212,7 +212,7 @@ int main(int argc, char *argv[]) {
     }
 
         //format print 5th spend time
-        printf("Time: %ds\n", total_time);
+        printf("Time: %f\n", total_time);
         int k = 0;
         list_node* st = head->next;
         for (list_node* start = st; start != NULL; start = start->next)
