@@ -132,7 +132,7 @@ int main(int argc, char *argv[]) {
       // 定义正则表达式
       regex_t re_1;
       regex_t re_2;
-      const char* pattern_sys_name = "^[a-zA-Z]*_*[a-zA-Z]*[0-9]*\\(";
+      const char* pattern_sys_name = "^[a-z_][a-z0-9_]*";;
       const char* pattern_sys_time = "<[0-9\\.]*>\n";
       if(regcomp(&re_1, pattern_sys_name, REG_EXTENDED) != 0 || regcomp(&re_2, pattern_sys_time, REG_EXTENDED) != 0){
           perror("falut regcmp create");
@@ -152,16 +152,23 @@ int main(int argc, char *argv[]) {
         // check sys_name
         regmatch_t sys_name;
         if(regexec(&re_1, buffer, (size_t) 1, &sys_name, 0) != 0) {
-              continue;
+          continue;
         }
-        char name[1024];
         size_t sys_name_len = sys_name.rm_eo - sys_name.rm_so;
-        strncpy(name, buffer + sys_name.rm_so, sys_name_len);
-        
+        char *temp_name = (char *)malloc(sizeof(char) * sys_name_len);
+        strncpy(temp_name, buffer + sys_name.rm_so, sys_name_len);
+        char name[512];
+        int i = 0;
+        for (i = 0; i < sys_name_len; i ++){
+            if(temp_name[i] == '(') break;
+            name[i] = temp_name[i];
+        }
+        name[i] = '\0';
+
         //check sys spend time
         regmatch_t sys_time;
         if(regexec(&re_2, buffer, (size_t) 1, &sys_time, 0) != 0) {
-              continue;
+            continue;
         }
         char time[512];
         size_t sys_time_len = sys_time.rm_eo - sys_time.rm_so;
@@ -227,7 +234,7 @@ int main(int argc, char *argv[]) {
         close(pipefd[0]);
         regfree(&re_1);
         regfree(&re_2);
-        free_list(head);
+        //free_list(head);
     }
     return 0;
 }
