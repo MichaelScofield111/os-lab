@@ -14,14 +14,14 @@
 
 // store the syscall informaton in the list
 typedef struct list_node{
-  char* name;
+  char* node_name;
   double time;
   struct  list_node* next;
 }list_node;
 
 // add vitural head
 list_node head_node = {
-  .name="start",
+  .node_name="start",
   .time=99999,
   .next=NULL
 };
@@ -62,8 +62,8 @@ void free_list(struct list_node *head) {
   list_node *curr = head;
   while (curr != NULL) {
     struct list_node *next = curr->next;
-    if (curr->name != NULL) {
-      free(curr->name);
+    if (curr->node_name != NULL) {
+      free(curr->node_name);
     }
     free(curr);
     curr = next;
@@ -196,7 +196,7 @@ int main(int argc, char *argv[]) {
         list_node* pre = NULL;
         for (list_node* curr = head; curr != NULL; curr = curr->next)
         {
-          if(strcmp(curr->name, name) == 0){
+          if(strcmp(curr->node_name, name) == 0){
             update_flag = 1;
             node = curr;
             pre->next = curr->next;
@@ -211,7 +211,7 @@ int main(int argc, char *argv[]) {
         } else {
           // 新建节点，初始化信息
           node = (list_node *)malloc(sizeof(list_node));
-          node->name = name;
+          node->node_name = name;
           node->time = spent_time;
         }
         // 插入链表
@@ -225,7 +225,7 @@ int main(int argc, char *argv[]) {
         for (list_node* start = st; start != NULL; start = start->next)
         {  
           if((k ++) > 5) break;
-          printf("%10s:%10lfs(%.2lf%%)\n",start->name,start->time, start->time / total_time * 100);
+          printf("%10s:%10lfs(%.2lf%%)\n",start->node_name,start->time, start->time / total_time * 100);
         }
 
         printf("===================================\n");
