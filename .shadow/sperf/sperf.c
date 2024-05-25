@@ -157,10 +157,10 @@ int main(int argc, char *argv[]) {
         if(regexec(&re_1, buffer, (size_t) 1, &sys_name, 0) != 0) {
           continue;
         }
+        char temp_name[512];
         size_t sys_name_len = sys_name.rm_eo - sys_name.rm_so;
-        char *temp_name = (char *)malloc(sizeof(char) * sys_name_len);
         strncpy(temp_name, buffer + sys_name.rm_so, sys_name_len);
-        char name[512];
+        char *name = (char *)malloc(sizeof(char) * sys_name_len);
         int j = 0;
         for (int i = 0; i < sys_name_len; i ++){
             if(temp_name[i] == '(') continue;            
@@ -168,8 +168,7 @@ int main(int argc, char *argv[]) {
             j ++;
         }
         name[j] = '\0';
-        free(temp_name);
-        
+
         //check sys spend time
         regmatch_t sys_time;
         if(regexec(&re_2, buffer, (size_t) 1, &sys_time, 0) != 0) {
@@ -178,7 +177,7 @@ int main(int argc, char *argv[]) {
         char time[512];
         size_t sys_time_len = sys_time.rm_eo - sys_time.rm_so;
         strncpy(time, buffer + sys_time.rm_so + 1, sys_time_len);
-        char num_time[512];
+        char *num_time = (char *)malloc(sizeof(char) * sys_name_len);
         j = 0;
         for (int i = 0; time[i];  i ++){
             if((time[i] >= '0' && time[i] <= '9') || time[i] == '.'){
