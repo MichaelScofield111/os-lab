@@ -19,7 +19,7 @@ typedef struct list_node{
   struct  list_node* next;
 }list_node;
 
-// add head node
+// add vitural head
 list_node head_node = {
   .name="start",
   .time=99999,
@@ -33,25 +33,28 @@ list_node* insert_node(list_node* head, list_node* node)
     if(node == NULL) return head;
     assert(node);
 
-    // record pre point
-    list_node* p = head, *q = NULL;
-    while(p != NULL)
-    { 
-      if(node->time >= p->time) break;
-      q = p;
-      p = p->next;
-
+    if(head->next == NULL){
+        node->next = head->next;
+        head->next = node;
     }
+    else
+    {   list_node* pre = head;
+        list_node* cur = NULL;
+        for (cur = head->next; cur != NULL; cur = cur->next){
+            if(node->time > cur->time){
+                // insert
+                pre->next = node;
+                node->next = cur;
+            }
+            pre = cur;
+        }
 
-    if(p == NULL)
-    {
-      q->next = node;
-      node->next = NULL;
-    }else{
-      node->next = p;
-      q->next = node;
+        // special check
+        if(cur == NULL){
+            pre->next = node;
+            node ->next = cur;
+        }
     }
-
     return head;
 }
 
@@ -114,7 +117,7 @@ int main(int argc, char *argv[]) {
        char *exec_envp[] = { "PATH=/bin", NULL, };
        execve("strace",          exec_argv, exec_envp);
        execve("/bin/strace",     exec_argv, exec_envp);
-        execve("/usr/bin/strace", exec_argv, exec_envp);
+       execve("/usr/bin/strace", exec_argv, exec_envp);
        close(pipefd[1]);
        perror(argv[0]);
        exit(-1);
@@ -136,7 +139,6 @@ int main(int argc, char *argv[]) {
           exit(-1);
       }
 
-
       // read stace form pipe
       char buffer[512];
       close(pipefd[1]);
@@ -144,7 +146,7 @@ int main(int argc, char *argv[]) {
       while(fgets(buffer,sizeof(buffer), fp) != NULL)
       {
         if (strstr(buffer, "+++ exited with 0 +++") != NULL || strstr(buffer, "+++ exited with 1 +++") != NULL) {
-                break;
+            break;
         }
 
         // check sys_name
@@ -207,20 +209,19 @@ int main(int argc, char *argv[]) {
         }
         // 插入链表
         head = insert_node(head, node);
+    }
 
         //format print 5th spend time
-         printf("Time: %ds\n", curr_time);
+        printf("Time: %ds\n", total_time);
         int k = 0;
         list_node* st = head->next;
         for (list_node* start = st; start != NULL; start = start->next)
         {  
-          if(k ++ > 5) break;
+          if((k ++) > 5) break;
           printf("%10s:%10lfs(%.2lf%%)\n",start->name,start->time, start->time / total_time * 100);
         }
-          sleep(2);
-          curr_time += 2;
-          printf("===================================\n");
-        }
+
+        printf("===================================\n");
 
         fclose(fp);
         close(pipefd[0]);
@@ -228,7 +229,6 @@ int main(int argc, char *argv[]) {
         regfree(&re_2);
         free_list(head);
     }
-
     return 0;
 }
 
