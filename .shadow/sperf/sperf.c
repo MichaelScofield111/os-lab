@@ -228,7 +228,7 @@ int main(int argc, char *argv[]) {
         list_node* st = head->next;
         for (list_node* start = st; start != NULL; start = start->next)
         {  
-          if((k ++) > 5) break;
+          if((k ++) > 6) break;
           printf("%10s:%10lfs(%.2lf%%)\n",start->sys_name,start->time, start->time / total_time * 100);
         }
 
