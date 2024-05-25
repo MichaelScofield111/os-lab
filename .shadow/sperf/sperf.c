@@ -14,7 +14,7 @@
 
 // store the syscall informaton in the list
 typedef struct list_node{
-  char  sys_name;
+  char*  sys_name;
   double time;
   struct  list_node* next;
 }list_node;
@@ -186,9 +186,10 @@ int main(int argc, char *argv[]) {
             }
         }
         num_time[j] = '\0';
-
         
+
         double spent_time = atof(num_time);
+        free(num_time);
         // all time update
         total_time += spent_time;
 
@@ -203,6 +204,7 @@ int main(int argc, char *argv[]) {
             update_flag = 1;
             pre->next = curr->next;
             node = curr;
+            free(name);
             break;
           }
           pre = curr;
@@ -220,8 +222,7 @@ int main(int argc, char *argv[]) {
 
         // 插入链表
         head = insert_node(head, node);
-        free(name);
-        free(num_time);
+ 
     }
 
         //format print 5th spend time
