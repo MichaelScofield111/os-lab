@@ -14,7 +14,7 @@
 
 // store the syscall informaton in the list
 typedef struct list_node{
-  char*  sys_name;
+  char  sys_name;
   double time;
   struct  list_node* next;
 }list_node;
