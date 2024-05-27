@@ -8,4 +8,7 @@ pstree: pstree.o
 
 pstree.o: pstree.cpp
 	@g++ $(CFLAGS) -c $< 
+
+clean:
+	rm -f *.o pstree
 		
