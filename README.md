@@ -8,12 +8,14 @@ i have the time later on.
 
 ***
 ### WorkLoad
-M1     :white_check_mark: \  
-L0     :white_check_mark: \  
-M2     :white_check_mark: \  
-M4     :white_check_mark: \  
-L1     :white_check_mark: \  
-M5     :white_check_mark:
+| Task  | Status |  
+|-------|--------|  
+| M1    | :white_check_mark: |  
+| L0    | :white_check_mark: |  
+| M2    | :white_check_mark: |  
+| M4    | :white_check_mark: |  
+| L1    | :white_check_mark: |  
+| M5    | :white_check_mark: |
 ***
 ### TDL
 M3 :fire: \
