@@ -8,15 +8,16 @@
 #include <dirent.h>
 #include <assert.h>
 #include <sys/types.h>
+#include <algorithm>
 
-#define NMAE_LENGHT 1024
+#define NAME_LENGTH 1024
 
 static int version{0}, show_pid{0}, sort_order{0};
 
 struct Proc_Node{
     pid_t pid;
     pid_t* children;
-    char name[NMAE_LENGHT];
+    char name[NAME_LENGTH];
     int child_num;
 };
 
@@ -61,7 +62,8 @@ void get_all_procs_and_build_tree()
     fscanf(fp, "%d", &pid_max);
     fclose(fp);
     // malloc proc array store all procs
-    Proc_Node* procs = (Proc_Node *)malloc((pid_max + 1) * sizeof(Proc_Node)); 
+    int num_proc = std::min(32768, (int)pid_max); 
+    Proc_Node* procs = (Proc_Node *)malloc((num_proc) * sizeof(Proc_Node)); 
     Proc_Node* p = procs;
     // malloc ppid array store all pid
     pid_t* ppids = (pid_t *)malloc(sizeof(pid_t) * pid_max);
@@ -86,6 +88,7 @@ void get_all_procs_and_build_tree()
             char buf[1024];
             while ((fscanf(fp, "%s", buf) != EOF)) {
                 if (strcmp(buf, "Name:") == 0) {
+                    printf("%p", (void*)p->name);
                     fscanf(fp, "%s", p->name);
                 }
                 if (strcmp(buf, "Pid:") == 0) {
